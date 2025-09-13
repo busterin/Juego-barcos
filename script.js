@@ -19,7 +19,7 @@
 
   // Tamaños de peces/rocas
   const COIN = { radius: 24, spawnEveryMs: 700 };
-  const OBST = { size: 72, spawnEveryMs: 950 };
+  const OBST = { size: 72, spawnEveryMs: 1500 };
 
   const WIN_COINS = 10;
   const START_LIVES = 3;
