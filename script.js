@@ -9,8 +9,8 @@
   // Si ya duplicaste el tamaño del barco en tu proyecto, perfecto.
   // Aquí mantengo los valores por defecto (ajústalos si quieres fijarlo desde el código).
   const BOAT = {
-    width: 46,
-    height: 78,
+    width: 92,
+    height: 156,
     speed: 480, // px/s horizontal
     invulnMs: 1200
   };
@@ -27,7 +27,7 @@
     water: "assets/water_tile_512.png",
     boat:  "assets/Barco.PNG",
     coin:  "assets/Peces.PNG", // <- peces
-    rock:  "assets/Roca.PNG",  // <- roca
+    rock:  "assets/Rocas.PNG",  // <- roca
     heart: "assets/heart_32.png"
   };
 
