@@ -134,3 +134,9 @@ html, body {
 
 /* Ocultar botón de pausa arriba */
 #pauseBtn{ display: none !important; }
+
+/* Oculta por completo los contenedores del HUD superior */
+.hud-right,
+.hud-left{
+  display: none !important;
+}
