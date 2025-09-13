@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <title>Boat Run</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-root">
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div class="hud-left">
+        <span id="hearts" aria-label="Vidas">❤️❤️❤️</span>
+      </div>
+      <div class="hud-right">
+        <span id="coins" aria-label="Monedas">🪙 0 / 10</span>
+        <button id="pauseBtn" aria-label="Pausar/Reanudar">⏸</button>
+      </div>
+    </div>
+
+    <div id="overlay" class="hidden">
+      <div id="overlay-card">
+        <h1 id="overlay-title">Título</h1>
+        <p id="overlay-sub">Subtítulo</p>
+        <button id="restartBtn">Reiniciar</button>
+      </div>
+    </div>
+
+    <!-- Controles táctiles opcionales (invisibles, pero capturan arrastre) -->
+    <div id="touch-layer"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
