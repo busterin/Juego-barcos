@@ -70,7 +70,6 @@
   };
 
   function resizeCanvas(){
-    // Mantener aspecto vertical; usamos dimensiones virtuales escaladas por DPR
     const cssW = Math.min(window.innerWidth, 420);
     const cssH = Math.min(window.innerHeight, 740);
     canvas.style.width = cssW + 'px';
@@ -89,7 +88,6 @@
   }
 
   function circleRectCollision(cx, cy, cr, rx, ry, rw, rh){
-    // coin (circle) vs boat/obstacle (rect)
     const closestX = clamp(cx, rx - rw/2, rx + rw/2);
     const closestY = clamp(cy, ry - rh/2, ry + rh/2);
     const dx = cx - closestX;
@@ -102,12 +100,9 @@
     hudCoins.textContent = `🪙 ${state.coins} / ${WIN_COINS}`;
   }
 
-  function showOverlay(title, sub){
-    overlay.classList.remove('hidden');
-    overlayTitle.textContent = title;
-    overlaySub.textContent = sub;
+  function hideOverlay(){
+    overlay.classList.remove('show');
   }
-  function hideOverlay(){ overlay.classList.add('hidden'); }
 
   // ====== INPUT ======
   let keys = new Set();
@@ -119,15 +114,13 @@
     keys.delete(e.key.toLowerCase());
   });
 
-  // Touch / arrastre: movemos el objetivo X al dedo
+  // Touch / arrastre
   function pointerToLocalX(ev){
     const rect = canvas.getBoundingClientRect();
     const x = (ev.clientX - rect.left) / rect.width * VIRTUAL_W;
     return clamp(x, 24, VIRTUAL_W-24);
   }
-  const onPointerDown = (ev)=>{
-    state.pointerX = pointerToLocalX(ev);
-  };
+  const onPointerDown = (ev)=>{ state.pointerX = pointerToLocalX(ev); };
   const onPointerMove = (ev)=>{
     if (ev.buttons === 0 && ev.pointerType !== 'touch' && state.pointerX===null) return;
     state.pointerX = pointerToLocalX(ev);
@@ -159,16 +152,13 @@
     state.timers.coin += dt*1000;
     state.timers.obst += dt*1000;
 
-    // velocidad base + leve escalado con progreso
     state.speed = SCROLL_SPEED_BASE + SCROLL_SPEED_GAIN * state.coins * 12;
     state.scroll = (state.scroll + state.speed * dt) % 512;
 
-    // input teclado
     let dir = 0;
     if (keys.has('arrowleft') || keys.has('a')) dir -= 1;
     if (keys.has('arrowright') || keys.has('d')) dir += 1;
 
-    // target por puntero
     if (state.pointerX != null){
       const dx = state.pointerX - state.boat.x;
       const maxMove = BOAT.speed * dt;
@@ -179,54 +169,35 @@
 
     state.boat.x = clamp(state.boat.x, 28, VIRTUAL_W-28);
 
-    // Spawns
-    if (state.timers.coin >= COIN.spawnEveryMs){
-      state.timers.coin = 0;
-      spawnCoin();
-    }
-    if (state.timers.obst >= OBST.spawnEveryMs){
-      state.timers.obst = 0;
-      spawnObst();
-    }
+    if (state.timers.coin >= COIN.spawnEveryMs){ state.timers.coin = 0; spawnCoin(); }
+    if (state.timers.obst >= OBST.spawnEveryMs){ state.timers.obst = 0; spawnObst(); }
 
-    // Mover entidades hacia abajo
     for (const c of state.entities.coins) c.y += state.speed * dt;
     for (const o of state.entities.obst)  o.y += o.vy * dt;
 
-    // Limpiar fuera de pantalla
     state.entities.coins = state.entities.coins.filter(c => c.y < VIRTUAL_H + 40);
     state.entities.obst  = state.entities.obst.filter(o => o.y < VIRTUAL_H + 60);
 
     // Colisiones
-    // Coins
     for (let i = state.entities.coins.length - 1; i >= 0; i--){
       const c = state.entities.coins[i];
       if (circleRectCollision(c.x, c.y, c.r, state.boat.x, state.boat.y, state.boat.w, state.boat.h)){
         state.entities.coins.splice(i,1);
         state.coins++;
         updateHUD();
-        if (state.coins >= WIN_COINS){
-          win();
-          return;
-        }
+        if (state.coins >= WIN_COINS){ win(); return; }
       }
     }
 
-    // Obstáculos (si no estamos invulnerables)
     if (state.time*1000 > state.invulnUntil){
       for (let i = state.entities.obst.length - 1; i >= 0; i--){
         const o = state.entities.obst[i];
         if (aabb({x: state.boat.x, y: state.boat.y, w: state.boat.w, h: state.boat.h}, o)){
-          // golpe
           state.lives--;
           updateHUD();
           state.invulnUntil = state.time*1000 + BOAT.invulnMs;
-          // empujón visual
           o.y += 40;
-          if (state.lives <= 0){
-            gameOver();
-            return;
-          }
+          if (state.lives <= 0){ gameOver(); return; }
           break;
         }
       }
@@ -235,11 +206,10 @@
 
   // ====== RENDER ======
   function render(){
-    // Fondo: patrón de agua desplazado
-    if (waterPattern){
+    // Fondo simple (o con agua si hay asset)
+    if (images.water){
       ctx.save();
       ctx.translate(0, (state.scroll % 512) - 512);
-      // Pintar dos tiles verticales para cubrir scroll
       for (let y=-512; y < VIRTUAL_H+512; y+=512){
         for (let x=0; x < VIRTUAL_W; x+=512){
           ctx.drawImage(images.water, x, y, 512, 512);
@@ -247,129 +217,60 @@
       }
       ctx.restore();
     } else {
-      // fallback: gradiente simple
       const g = ctx.createLinearGradient(0,0,0,VIRTUAL_H);
       g.addColorStop(0, '#0ea5e9');
       g.addColorStop(1, '#1d4ed8');
       ctx.fillStyle = g;
       ctx.fillRect(0,0,VIRTUAL_W,VIRTUAL_H);
-
-      // pequeñas olas
-      ctx.globalAlpha = 0.08;
-      for (let y = -40 + (state.scroll % 40); y < VIRTUAL_H + 40; y+=40){
-        ctx.beginPath();
-        for (let x=0; x<=VIRTUAL_W; x+=20){
-          const yy = y + Math.sin((x + state.scroll)*0.04)*6;
-          if (x===0) ctx.moveTo(x, yy);
-          else ctx.lineTo(x, yy);
-        }
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = '#ffffff';
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
     }
 
     // Monedas
     for (const c of state.entities.coins){
-      if (images.coin){
-        const s = COIN.radius*2;
-        ctx.drawImage(images.coin, c.x - s/2, c.y - s/2, s, s);
-      } else {
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, COIN.radius, 0, Math.PI*2);
-        ctx.fillStyle = '#fbbf24';
-        ctx.fill();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = '#f59e0b';
-        ctx.stroke();
-      }
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, COIN.radius, 0, Math.PI*2);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#f59e0b';
+      ctx.stroke();
     }
 
-    // Obstáculos (rocas)
+    // Obstáculos
     for (const o of state.entities.obst){
-      if (images.rock){
-        ctx.drawImage(images.rock, o.x - o.w/2, o.y - o.h/2, o.w, o.h);
-      } else {
-        ctx.fillStyle = '#6b7280';
-        ctx.beginPath();
-        const r = 10;
-        // rect redondeado irregular
-        roundRect(ctx, o.x - o.w/2, o.y - o.h/2, o.w, o.h, r);
-        ctx.fill();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = '#4b5563';
-        ctx.stroke();
-      }
+      ctx.fillStyle = '#6b7280';
+      ctx.fillRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
     }
 
     // Barco
     const blink = (state.time*1000 < state.invulnUntil) && (Math.floor(state.time*10)%2===0);
     if (!blink){
-      if (images.boat){
-        ctx.drawImage(images.boat, state.boat.x - state.boat.w/2, state.boat.y - state.boat.h/2, state.boat.w, state.boat.h);
-      } else {
-        drawBoatShape(ctx, state.boat.x, state.boat.y, state.boat.w, state.boat.h);
-      }
+      ctx.fillStyle = '#e11d48';
+      ctx.fillRect(state.boat.x - state.boat.w/2, state.boat.y - state.boat.h/2, state.boat.w, state.boat.h);
     }
-  }
-
-  function drawBoatShape(ctx, cx, cy, w, h){
-    ctx.save();
-    ctx.translate(cx, cy);
-    // casco
-    ctx.fillStyle = '#e11d48';
-    ctx.strokeStyle = '#991b1b';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(0, -h/2);                    // proa
-    ctx.lineTo(w/2, h/2 - 10);
-    ctx.quadraticCurveTo(0, h/2, -w/2, h/2 - 10);
-    ctx.closePath();
-    ctx.fill(); ctx.stroke();
-
-    // cubierta
-    ctx.fillStyle = '#f3f4f6';
-    ctx.fillRect(-w*0.25, -h*0.15, w*0.5, h*0.45);
-
-    // detalle
-    ctx.fillStyle = '#1f2937';
-    ctx.fillRect(-w*0.18, -h*0.05, w*0.36, h*0.16);
-    ctx.restore();
-  }
-
-  function roundRect(ctx, x, y, w, h, r){
-    const rr = Math.min(r, w/2, h/2);
-    ctx.beginPath();
-    ctx.moveTo(x+rr,y);
-    ctx.arcTo(x+w,y,x+w,y+h,rr);
-    ctx.arcTo(x+w,y+h,x,y+h,rr);
-    ctx.arcTo(x,y+h,x,y,rr);
-    ctx.arcTo(x,y,x+w,y,rr);
-    ctx.closePath();
   }
 
   // ====== GAME STATE ======
   function win(){
     state.running = false;
-    // Overlay especial de victoria con el mensaje solicitado
-    overlay.classList.remove('hidden');
+    overlay.classList.add('show');
     overlayTitle.textContent = '¡LO HAS CONSEGUIDO!';
     overlaySub.textContent = 'El quinto número es 3.';
-    restartBtn.classList.remove('hidden');  // mostrar botón Reiniciar
+    restartBtn.classList.remove('hidden');
     pauseBtn.textContent = '▶️';
   }
 
   function gameOver(){
     state.running = false;
-    showOverlay('Game Over 💥', `Monedas recogidas: ${state.coins}/${WIN_COINS}`);
-    restartBtn.classList.remove('hidden');  // también permitir reinicio en game over
+    overlay.classList.add('show');
+    overlayTitle.textContent = 'Game Over 💥';
+    overlaySub.textContent = `Monedas recogidas: ${state.coins}/${WIN_COINS}`;
+    restartBtn.classList.remove('hidden');
     pauseBtn.textContent = '▶️';
   }
 
   function resetGame(){
     hideOverlay();
-    restartBtn.classList.add('hidden');     // ocultar el botón al empezar nueva partida
+    restartBtn.classList.add('hidden');
     Object.assign(state, {
       running: true,
       time: 0, lastTs: 0, scroll: 0,
@@ -389,7 +290,7 @@
   function togglePause(){
     state.running = !state.running;
     pauseBtn.textContent = state.running ? '⏸' : '▶️';
-    if (!overlay.classList.contains('hidden') && state.running){
+    if (overlay.classList.contains('show') && state.running){
       hideOverlay();
     }
   }
@@ -397,12 +298,10 @@
   // ====== LOOP ======
   function loop(ts){
     if (!state.lastTs) state.lastTs = ts;
-    const dt = Math.min(0.05, (ts - state.lastTs) / 1000); // clamp
+    const dt = Math.min(0.05, (ts - state.lastTs) / 1000);
     state.lastTs = ts;
-
     step(dt);
     render();
-
     requestAnimationFrame(loop);
   }
 
@@ -412,15 +311,10 @@
     updateHUD();
     window.addEventListener('resize', resizeCanvas, { passive: true });
 
-    // Carga de imágenes (opcional)
     images.water = await loadImage(ASSETS.water);
     images.boat  = await loadImage(ASSETS.boat);
     images.coin  = await loadImage(ASSETS.coin);
     images.rock  = await loadImage(ASSETS.rock);
-
-    if (images.water){
-      waterPattern = true;
-    }
 
     restartBtn.addEventListener('click', resetGame);
     pauseBtn.addEventListener('click', togglePause);
