@@ -1,6 +1,6 @@
 :root{
-  --w: 420px;       /* ancho virtual objetivo para móvil vertical */
-  --h: 740px;       /* alto virtual objetivo */
+  --w: 420px;
+  --h: 740px;
   --hud-pad: 10px;
   --card-bg: rgba(0,0,0,.75);
   --card-radius: 16px;
@@ -14,10 +14,10 @@
 
 html, body {
   margin: 0; padding: 0;
-  background: #0a1224; /* marco */
+  background: #0a1224;
   color: #fff;
   font-family: var(--font);
-  touch-action: none; /* para arrastre suave */
+  touch-action: none;
   overscroll-behavior: none;
   height: 100%;
 }
@@ -33,17 +33,20 @@ html, body {
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
   max-height: 100vh;
-  background: #1d4ed8; /* fallback si no pintamos agua */
+  background: #1d4ed8; /* fallback */
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(0,0,0,.45);
   display: block;
+  z-index: 0;
 }
 
+/* HUD */
 #hud{
   position: absolute;
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
   pointer-events: none;
+  z-index: 20; /* por encima del juego */
 }
 
 .hud-left, .hud-right{
@@ -69,16 +72,17 @@ html, body {
   font-weight: 600;
 }
 
+/* Overlay (oculto por defecto; visible con .show) */
 #overlay{
   position: absolute;
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
-  display: grid;
+  display: none !important;
   place-items: center;
   background: rgba(0,0,0,.35);
+  z-index: 30;
 }
-
-.hidden{ display: none; }
+#overlay.show{ display: grid !important; }
 
 #overlay-card{
   background: var(--card-bg);
@@ -90,7 +94,7 @@ html, body {
   backdrop-filter: blur(4px);
 }
 
-#restartBtn{
+#overlay-card button{
   margin-top: 10px;
   border: 0;
   padding: 10px 14px;
@@ -100,111 +104,30 @@ html, body {
   font-weight: 700;
 }
 
+/* Capa táctil por debajo del HUD/overlay */
 #touch-layer{
   position: absolute;
+  inset: 0;
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
-  inset: 0;
   touch-action: none;
-}
-/* Oculto por defecto SIEMPRE */
-#overlay{ display: none !important; }
-
-/* Visible solo cuando el JS añade la clase .show */
-#overlay.show{ display: grid !important; }
-
-/* El overlay solo se ve cuando tiene .show */
-#overlay { display: none !important; z-index: 30; }
-#overlay.show { display: grid !important; }
-
-/* La capa táctil queda por debajo del overlay */
-#touch-layer { z-index: 10; }
-
-/* Asegura orden de capas */
-#hud{ z-index: 20; }
-#touch-layer{ z-index: 10; }
-
-/* HUD en vertical (portrait): centrado y apilado */
-@media (orientation: portrait){
-  .hud-left, .hud-right{
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-  }
-  .hud-left{ top: var(--hud-pad); }
-  .hud-right{ top: calc(var(--hud-pad) + 46px); } /* debajo del primero */
-  
-  /* Un pelín más grande para móviles verticales */
-  #hearts, #coins{ font-size: 18px; }
-  #pauseBtn{ padding: 8px 12px; }
+  z-index: 10;
 }
 
-/* En horizontal (landscape) se mantiene tu diseño actual (izq./der.) */
+/* Ocultar indicadores (vidas y puntos) como pediste */
+#hearts, #coins{ display: none !important; }
 
-/* Asegura orden de capas */
-#hud{ z-index: 20; }
-
-/* En vertical: baja un poco el HUD usando el safe-area (notch) */
-@media (orientation: portrait){
-  :root{ --safe-top: env(safe-area-inset-top, 0px); }
-
-  .hud-left{
-    top: calc(var(--hud-pad) + var(--safe-top));
-    left: var(--hud-pad);
-    right: auto;
-    transform: none;
-  }
-  .hud-right{
-    top: calc(var(--hud-pad) + var(--safe-top) + 44px); /* debajo de las vidas */
-    right: var(--hud-pad);
-    left: auto;
-    transform: none;
-  }
-
-  #hearts, #coins{ font-size: 18px; line-height: 1; }
-}
-
-/* Asegura que el HUD esté por encima de todo */
-#hud{ z-index: 20; }
-
-/* En vertical: centra y apila Vidas y Peces, respetando el notch */
-@media (orientation: portrait){
-  .hud-left,
-  .hud-right{
-    position: absolute;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-  }
-  .hud-left{
-    top: calc(env(safe-area-inset-top, 0px) + 8px);
-  }
-  .hud-right{
-    top: calc(env(safe-area-inset-top, 0px) + 52px); /* debajo de Vidas */
-  }
-}
-/* Asegura que el HUD quede por encima y visible */
-#hud{ z-index: 20; }
-#touch-layer{ z-index: 10; }
-
-/* En vertical (portrait): centramos/apilamos HUD para que se vea siempre */
+/* Ajustes portrait: centrado seguro opcional del HUD (por si reactivas indicadores) */
 @media (orientation: portrait){
   :root{ --safe-top: env(safe-area-inset-top, 0px); }
   .hud-left,
   .hud-right{
-    position: absolute;
     left: 50%;
     right: auto;
     transform: translateX(-50%);
-    pointer-events: auto;
   }
-  .hud-left{
-    top: calc(var(--safe-top) + 8px);
-  }
-  .hud-right{
-    top: calc(var(--safe-top) + 52px); /* debajo de vidas */
-  }
-  #hearts, #coins{ font-size: 18px; line-height: 1; }
+  .hud-left{ top: calc(var(--safe-top) + 8px); }
+  .hud-right{ top: calc(var(--safe-top) + 52px); }
 }
 
-/* En horizontal (landscape): el propio juego se bloquea con el overlay desde JS */
+/* Landscape: el juego se bloquea con overlay desde JS */
