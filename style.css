@@ -163,3 +163,23 @@ html, body {
 
   #hearts, #coins{ font-size: 18px; line-height: 1; }
 }
+
+/* Asegura que el HUD esté por encima de todo */
+#hud{ z-index: 20; }
+
+/* En vertical: centra y apila Vidas y Peces, respetando el notch */
+@media (orientation: portrait){
+  .hud-left,
+  .hud-right{
+    position: absolute;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+  .hud-left{
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+  }
+  .hud-right{
+    top: calc(env(safe-area-inset-top, 0px) + 52px); /* debajo de Vidas */
+  }
+}
