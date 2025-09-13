@@ -3,7 +3,6 @@
   const VIRTUAL_W = 420;
   const VIRTUAL_H = 740;
 
-  const TARGET_FPS = 60;
   const SCROLL_SPEED_BASE = 160; // px/s
   const SCROLL_SPEED_GAIN = 0.3; // por moneda recogida
 
@@ -20,10 +19,10 @@
   const WIN_COINS = 10;
   const START_LIVES = 3;
 
-  // Opcional: rutas a assets (si existen en /assets). Si faltan, se dibujan formas.
+  // Rutas a assets
   const ASSETS = {
     water: "assets/water_tile_512.png",
-    boat:  "assets/boat_topdown_64x128.png",
+    boat:  "assets/Barco.PNG",   // tu barco
     coin:  "assets/coin_48.png",
     rock:  "assets/rock_96.png",
     heart: "assets/heart_32.png"
@@ -44,10 +43,10 @@
 
   let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
-  const loadImage = (src) => new Promise((res, rej) => {
+  const loadImage = (src) => new Promise((res) => {
     const img = new Image();
     img.onload = () => res(img);
-    img.onerror = () => res(null); // resolvemos con null para fallback
+    img.onerror = () => res(null);
     img.src = src;
   });
 
@@ -120,18 +119,14 @@
     const x = (ev.clientX - rect.left) / rect.width * VIRTUAL_W;
     return clamp(x, 24, VIRTUAL_W-24);
   }
-  const onPointerDown = (ev)=>{ state.pointerX = pointerToLocalX(ev); };
-  const onPointerMove = (ev)=>{
+  touchLayer.addEventListener('pointerdown', ev => { state.pointerX = pointerToLocalX(ev); });
+  touchLayer.addEventListener('pointermove', ev => {
     if (ev.buttons === 0 && ev.pointerType !== 'touch' && state.pointerX===null) return;
     state.pointerX = pointerToLocalX(ev);
-  };
-  const onPointerUp = ()=>{ state.pointerX = null; };
-
-  touchLayer.addEventListener('pointerdown', onPointerDown);
-  touchLayer.addEventListener('pointermove', onPointerMove);
-  touchLayer.addEventListener('pointerup', onPointerUp);
-  touchLayer.addEventListener('pointercancel', onPointerUp);
-  touchLayer.addEventListener('pointerleave', onPointerUp);
+  });
+  touchLayer.addEventListener('pointerup', ()=>{ state.pointerX = null; });
+  touchLayer.addEventListener('pointercancel', ()=>{ state.pointerX = null; });
+  touchLayer.addEventListener('pointerleave', ()=>{ state.pointerX = null; });
 
   // ====== SPAWN ======
   function spawnCoin(){
@@ -178,7 +173,6 @@
     state.entities.coins = state.entities.coins.filter(c => c.y < VIRTUAL_H + 40);
     state.entities.obst  = state.entities.obst.filter(o => o.y < VIRTUAL_H + 60);
 
-    // Colisiones
     for (let i = state.entities.coins.length - 1; i >= 0; i--){
       const c = state.entities.coins[i];
       if (circleRectCollision(c.x, c.y, c.r, state.boat.x, state.boat.y, state.boat.w, state.boat.h)){
@@ -206,7 +200,7 @@
 
   // ====== RENDER ======
   function render(){
-    // Fondo simple (o con agua si hay asset)
+    // Fondo simple
     if (images.water){
       ctx.save();
       ctx.translate(0, (state.scroll % 512) - 512);
@@ -241,11 +235,21 @@
       ctx.fillRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
     }
 
-    // Barco
+    // Barco (jugador)
     const blink = (state.time*1000 < state.invulnUntil) && (Math.floor(state.time*10)%2===0);
     if (!blink){
-      ctx.fillStyle = '#e11d48';
-      ctx.fillRect(state.boat.x - state.boat.w/2, state.boat.y - state.boat.h/2, state.boat.w, state.boat.h);
+      if (images.boat){
+        ctx.drawImage(
+          images.boat,
+          state.boat.x - state.boat.w/2,
+          state.boat.y - state.boat.h/2,
+          state.boat.w,
+          state.boat.h
+        );
+      } else {
+        ctx.fillStyle = '#e11d48';
+        ctx.fillRect(state.boat.x - state.boat.w/2, state.boat.y - state.boat.h/2, state.boat.w, state.boat.h);
+      }
     }
   }
 
