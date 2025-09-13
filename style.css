@@ -1,6 +1,6 @@
 :root{
-  --w: 420px;       /* ancho virtual objetivo para móvil vertical */
-  --h: 740px;       /* alto virtual objetivo */
+  --w: 420px;
+  --h: 740px;
   --hud-pad: 10px;
   --card-bg: rgba(0,0,0,.75);
   --card-radius: 16px;
@@ -14,10 +14,10 @@
 
 html, body {
   margin: 0; padding: 0;
-  background: #0a1224; /* marco */
+  background: #0a1224;
   color: #fff;
   font-family: var(--font);
-  touch-action: none; /* para arrastre suave */
+  touch-action: none;
   overscroll-behavior: none;
   height: 100%;
 }
@@ -33,7 +33,7 @@ html, body {
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
   max-height: 100vh;
-  background: #1d4ed8; /* fallback si no pintamos agua */
+  background: #1d4ed8;
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(0,0,0,.45);
   display: block;
@@ -45,7 +45,7 @@ html, body {
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
   pointer-events: none;
-  z-index: 20; /* por encima del touch-layer */
+  z-index: 20;
 }
 
 .hud-left, .hud-right{
@@ -78,7 +78,7 @@ html, body {
   display: grid;
   place-items: center;
   background: rgba(0,0,0,.35);
-  z-index: 30; /* siempre encima */
+  z-index: 30;
 }
 
 .hidden{ display: none; }
@@ -109,5 +109,5 @@ html, body {
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
   touch-action: none;
-  z-index: 10; /* debajo del HUD y del overlay */
+  z-index: 10;
 }
