@@ -4,26 +4,29 @@
   const VIRTUAL_H = 740;
 
   const SCROLL_SPEED_BASE = 160; // px/s
-  const SCROLL_SPEED_GAIN = 0.3; // por "moneda"/pez recogido
+  const SCROLL_SPEED_GAIN = 0.3; // por pez recogido
+
+  // Velocidad del desplazamiento del fondo (sutil y continuo)
+  const BG_SCROLL_SPEED = 20; // px/s
 
   // Barco al doble de tamaño
   const BOAT = {
     width: 92,
     height: 156,
-    speed: 480, // px/s horizontal
+    speed: 480,
     invulnMs: 1200
   };
 
-  // Ajustados para que se vean más grandes
-  const COIN = { radius: 24, spawnEveryMs: 700 }; // antes radius:16
-  const OBST = { size: 72, spawnEveryMs: 950 };   // antes size:56
+  // Tamaños de peces/rocas
+  const COIN = { radius: 24, spawnEveryMs: 700 };
+  const OBST = { size: 72, spawnEveryMs: 950 };
 
   const WIN_COINS = 10;
   const START_LIVES = 3;
 
-  // Rutas a assets (nombres/caps EXACTOS)
+  // Assets (nombres/caps exactos)
   const ASSETS = {
-    water: "assets/Fondo.PNG",  // fondo fijo
+    water: "assets/Fondo.PNG",  // fondo base
     boat:  "assets/Barco.PNG",
     coin:  "assets/Peces.PNG",  // peces
     rock:  "assets/Rocas.PNG",  // rocas
@@ -45,7 +48,7 @@
 
   let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
-  // Loader con logs de depuración
+  // Loader con logs
   const loadImage = (src) => new Promise((res) => {
     const img = new Image();
     img.onload = () => { console.log("[OK] Cargado", src); res(img); };
@@ -67,6 +70,7 @@
     pointerX: null,
     entities: { coins: [], obst: [] },
     timers: { coin: 0, obst: 0 },
+    bgScroll: 0
   };
 
   // ====== ORIENTACIÓN ======
@@ -76,19 +80,16 @@
     overlay.classList.add('show');
     overlayTitle.textContent = 'Gira el móvil 📱↻';
     overlaySub.textContent = 'Este juego está pensado para vertical.';
-    restartBtn.classList.add('hidden'); // no ofrecer reinicio aquí
-    state.running = false;              // bloquear juego
+    restartBtn.classList.add('hidden');
+    state.running = false;
     pauseBtn.textContent = '▶️';
   }
 
   function hideRotateBlockIfNeeded(){
-    // Solo ocultamos si el overlay lo mostramos por orientación
     if (overlay.classList.contains('show') &&
         overlayTitle.textContent.startsWith('Gira el móvil')) {
       overlay.classList.remove('show');
       restartBtn.classList.add('hidden');
-      // No forzamos a correr; mantenemos el estado actual de pausa
-      // pero si estaba bloqueado por orientación, reanudamos
       state.running = true;
       pauseBtn.textContent = '⏸';
     }
@@ -130,16 +131,13 @@
     return (dx*dx + dy*dy) <= cr*cr;
   }
 
+  // Aunque están ocultos por CSS, mantenemos el update por si los reactivas
   function updateHUD(){
-    // Mostramos número explícito, por si el emoji se escala raro
     hudHearts.textContent = `❤️ x${state.lives}`;
     hudCoins.textContent = `🪙 ${state.coins} / ${WIN_COINS}`;
   }
 
-  function hideOverlay(){
-    // Usamos clase .show controlada por CSS: #overlay {display:none} / #overlay.show {display:grid}
-    overlay.classList.remove('show');
-  }
+  function hideOverlay(){ overlay.classList.remove('show'); }
 
   // ====== INPUT ======
   let keys = new Set();
@@ -147,9 +145,7 @@
     if (['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)) keys.add(e.key.toLowerCase());
     if (e.key === ' '){ togglePause(); }
   });
-  window.addEventListener('keyup', e=>{
-    keys.delete(e.key.toLowerCase());
-  });
+  window.addEventListener('keyup', e=>{ keys.delete(e.key.toLowerCase()); });
 
   // Touch / arrastre
   function pointerToLocalX(ev){
@@ -186,8 +182,11 @@
     state.timers.obst += dt*1000;
 
     state.speed = SCROLL_SPEED_BASE + SCROLL_SPEED_GAIN * state.coins * 12;
-    state.scroll = (state.scroll + state.speed * dt) % 512;
 
+    // Desplazamiento sutil del fondo
+    state.bgScroll = (state.bgScroll + BG_SCROLL_SPEED * dt) % VIRTUAL_H;
+
+    // Input
     let dir = 0;
     if (keys.has('arrowleft') || keys.has('a')) dir -= 1;
     if (keys.has('arrowright') || keys.has('d')) dir += 1;
@@ -239,11 +238,13 @@
 
   // ====== RENDER ======
   function render(){
-    // Fondo fijo: Fondo.PNG estirado a todo el canvas
+    // Fondo desplazándose suavemente hacia abajo:
     if (images.water){
-      ctx.drawImage(images.water, 0, 0, VIRTUAL_W, VIRTUAL_H);
+      const offsetY = - (state.bgScroll % VIRTUAL_H);
+      ctx.drawImage(images.water, 0, offsetY, VIRTUAL_W, VIRTUAL_H);
+      ctx.drawImage(images.water, 0, offsetY + VIRTUAL_H, VIRTUAL_W, VIRTUAL_H);
     } else {
-      // Fallback: gradiente azul si no carga
+      // Fallback: gradiente
       const g = ctx.createLinearGradient(0,0,0,VIRTUAL_H);
       g.addColorStop(0, '#0ea5e9');
       g.addColorStop(1, '#1d4ed8');
@@ -251,13 +252,12 @@
       ctx.fillRect(0,0,VIRTUAL_W,VIRTUAL_H);
     }
 
-    // Peces (antes monedas)
+    // Peces
     for (const c of state.entities.coins){
       if (images.coin){
         const s = COIN.radius * 2;
         ctx.drawImage(images.coin, c.x - s/2, c.y - s/2, s, s);
       } else {
-        // Fallback: círculo dorado
         ctx.beginPath();
         ctx.arc(c.x, c.y, COIN.radius, 0, Math.PI*2);
         ctx.fillStyle = '#fbbf24';
@@ -268,12 +268,11 @@
       }
     }
 
-    // Rocas (obstáculos)
+    // Rocas
     for (const o of state.entities.obst){
       if (images.rock){
         ctx.drawImage(images.rock, o.x - o.w/2, o.y - o.h/2, o.w, o.h);
       } else {
-        // Fallback: rectángulo gris
         ctx.fillStyle = '#6b7280';
         ctx.fillRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
       }
@@ -291,7 +290,6 @@
           state.boat.h
         );
       } else {
-        // Fallback: rectángulo rojo
         ctx.fillStyle = '#e11d48';
         ctx.fillRect(state.boat.x - state.boat.w/2, state.boat.y - state.boat.h/2, state.boat.w, state.boat.h);
       }
@@ -331,6 +329,7 @@
       pointerX: null,
       entities: { coins: [], obst: [] },
       timers: { coin: 0, obst: 0 },
+      bgScroll: 0
     });
     updateHUD();
     pauseBtn.textContent = '⏸';
@@ -341,8 +340,7 @@
     pauseBtn.textContent = state.running ? '⏸' : '▶️';
     if (overlay.classList.contains('show') && state.running &&
         overlayTitle.textContent.startsWith('Gira el móvil')){
-      // Si el overlay era por orientación, no lo quitamos con la barra
-      return;
+      return; // no cerrar overlay si está por orientación en landscape
     }
     if (overlay.classList.contains('show') && state.running){
       hideOverlay();
@@ -366,11 +364,10 @@
     window.addEventListener('resize', resizeCanvas, { passive: true });
     window.addEventListener('orientationchange', updateOrientation);
 
-    // Carga con logs
     images.water = await loadImage(ASSETS.water); // Fondo.PNG
     images.boat  = await loadImage(ASSETS.boat);
-    images.coin  = await loadImage(ASSETS.coin); // Peces.PNG
-    images.rock  = await loadImage(ASSETS.rock); // Rocas.PNG
+    images.coin  = await loadImage(ASSETS.coin);  // Peces.PNG
+    images.rock  = await loadImage(ASSETS.rock);  // Rocas.PNG
 
     restartBtn.addEventListener('click', resetGame);
     pauseBtn.addEventListener('click', togglePause);
