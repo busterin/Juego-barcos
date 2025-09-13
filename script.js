@@ -309,8 +309,8 @@
   function gameOver(){
     state.running = false;
     overlay.classList.add('show');
-    overlayTitle.textContent = 'Game Over 💥';
-    overlaySub.textContent = `Monedas recogidas: ${state.coins}/${WIN_COINS}`;
+    overlayTitle.textContent = 'Fin de la partida 💥';
+    overlaySub.textContent = `Peces recogidos: ${state.coins}/${WIN_COINS}`;
     restartBtn.classList.remove('hidden');
     pauseBtn.textContent = '▶️';
   }
