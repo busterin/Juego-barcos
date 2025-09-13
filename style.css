@@ -183,3 +183,28 @@ html, body {
     top: calc(env(safe-area-inset-top, 0px) + 52px); /* debajo de Vidas */
   }
 }
+/* Asegura que el HUD quede por encima y visible */
+#hud{ z-index: 20; }
+#touch-layer{ z-index: 10; }
+
+/* En vertical (portrait): centramos/apilamos HUD para que se vea siempre */
+@media (orientation: portrait){
+  :root{ --safe-top: env(safe-area-inset-top, 0px); }
+  .hud-left,
+  .hud-right{
+    position: absolute;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    pointer-events: auto;
+  }
+  .hud-left{
+    top: calc(var(--safe-top) + 8px);
+  }
+  .hud-right{
+    top: calc(var(--safe-top) + 52px); /* debajo de vidas */
+  }
+  #hearts, #coins{ font-size: 18px; line-height: 1; }
+}
+
+/* En horizontal (landscape): el propio juego se bloquea con el overlay desde JS */
