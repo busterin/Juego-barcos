@@ -21,12 +21,12 @@
 
   // Rutas a assets
   const ASSETS = {
-    water: "assets/water_tile_512.png",
-    boat:  "assets/Barco.PNG",   // tu barco
-    coin:  "assets/coin_48.png",
-    rock:  "assets/rock_96.png",
-    heart: "assets/heart_32.png"
-  };
+  water: "assets/water_tile_512.png",
+  boat:  "assets/Barco.PNG",
+  coin:  "assets/Peces.PNG",   // nuevo
+  rock:  "assets/Roca.PNG",    // nuevo
+  heart: "assets/heart_32.png"
+};
 
   // ====== ESTADO ======
   const canvas = document.getElementById('game');
