@@ -7,7 +7,7 @@
   const SCROLL_SPEED_GAIN = 0.3; // por pez recogido
 
   // Velocidad del desplazamiento del fondo (sutil y continuo)
-  const BG_SCROLL_SPEED = 20; // px/s
+  const BG_SCROLL_SPEED = 40; // px/s
 
   // Barco al doble de tamaño
   const BOAT = {
