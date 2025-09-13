@@ -119,3 +119,24 @@ html, body {
 
 /* La capa táctil queda por debajo del overlay */
 #touch-layer { z-index: 10; }
+
+/* Asegura orden de capas */
+#hud{ z-index: 20; }
+#touch-layer{ z-index: 10; }
+
+/* HUD en vertical (portrait): centrado y apilado */
+@media (orientation: portrait){
+  .hud-left, .hud-right{
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+  .hud-left{ top: var(--hud-pad); }
+  .hud-right{ top: calc(var(--hud-pad) + 46px); } /* debajo del primero */
+  
+  /* Un pelín más grande para móviles verticales */
+  #hearts, #coins{ font-size: 18px; }
+  #pauseBtn{ padding: 8px 12px; }
+}
+
+/* En horizontal (landscape) se mantiene tu diseño actual (izq./der.) */
