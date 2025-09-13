@@ -33,8 +33,7 @@ html, body {
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
   max-height: 100vh;
-  background: #1d4ed8; /* fallback */
-  border-radius: 18px;
+  background: #1d4ed8;
   box-shadow: 0 10px 30px rgba(0,0,0,.45);
   display: block;
   z-index: 0;
