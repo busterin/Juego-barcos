@@ -90,7 +90,7 @@ html, body {
   backdrop-filter: blur(4px);
 }
 
-#restartBtn{
+#overlay-card button{
   margin-top: 10px;
   border: 0;
   padding: 10px 14px;
