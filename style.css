@@ -140,3 +140,26 @@ html, body {
 }
 
 /* En horizontal (landscape) se mantiene tu diseño actual (izq./der.) */
+
+/* Asegura orden de capas */
+#hud{ z-index: 20; }
+
+/* En vertical: baja un poco el HUD usando el safe-area (notch) */
+@media (orientation: portrait){
+  :root{ --safe-top: env(safe-area-inset-top, 0px); }
+
+  .hud-left{
+    top: calc(var(--hud-pad) + var(--safe-top));
+    left: var(--hud-pad);
+    right: auto;
+    transform: none;
+  }
+  .hud-right{
+    top: calc(var(--hud-pad) + var(--safe-top) + 44px); /* debajo de las vidas */
+    right: var(--hud-pad);
+    left: auto;
+    transform: none;
+  }
+
+  #hearts, #coins{ font-size: 18px; line-height: 1; }
+}
