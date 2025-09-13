@@ -4,29 +4,32 @@
   const VIRTUAL_H = 740;
 
   const SCROLL_SPEED_BASE = 160; // px/s
-  const SCROLL_SPEED_GAIN = 0.3; // por moneda recogida
+  const SCROLL_SPEED_GAIN = 0.3; // por "moneda"/pez recogido
 
+  // Si ya duplicaste el tamaño del barco en tu proyecto, perfecto.
+  // Aquí mantengo los valores por defecto (ajústalos si quieres fijarlo desde el código).
   const BOAT = {
-    width: 92,
-    height: 156,
+    width: 46,
+    height: 78,
     speed: 480, // px/s horizontal
     invulnMs: 1200
   };
 
-  const COIN = { radius: 16, spawnEveryMs: 700 };
-  const OBST = { size: 56, spawnEveryMs: 950 };
+  // Ajustados para que se vean más grandes
+  const COIN = { radius: 24, spawnEveryMs: 700 }; // antes radius:16
+  const OBST = { size: 72, spawnEveryMs: 950 };   // antes size:56
 
   const WIN_COINS = 10;
   const START_LIVES = 3;
 
-  // Rutas a assets
+  // Rutas a assets (nombres/caps EXACTOS)
   const ASSETS = {
-  water: "assets/water_tile_512.png",
-  boat:  "assets/Barco.PNG",
-  coin:  "assets/Peces.PNG",   // nuevo
-  rock:  "assets/Roca.PNG",    // nuevo
-  heart: "assets/heart_32.png"
-};
+    water: "assets/water_tile_512.png",
+    boat:  "assets/Barco.PNG",
+    coin:  "assets/Peces.PNG", // <- peces
+    rock:  "assets/Roca.PNG",  // <- roca
+    heart: "assets/heart_32.png"
+  };
 
   // ====== ESTADO ======
   const canvas = document.getElementById('game');
@@ -43,17 +46,16 @@
 
   let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
+  // Loader con logs de depuración
   const loadImage = (src) => new Promise((res) => {
     const img = new Image();
-    img.onload = () => res(img);
-    img.onerror = () => res(null);
+    img.onload = () => { console.log("[OK] Cargado", src); res(img); };
+    img.onerror = () => { console.warn("[ERROR] No se pudo cargar", src); res(null); };
     img.src = src;
   });
 
   const images = {};
-  let waterPattern = null;
-
-  const state = {
+  let state = {
     running: true,
     time: 0,
     lastTs: 0,
@@ -100,6 +102,7 @@
   }
 
   function hideOverlay(){
+    // Usamos clase .show controlada por CSS: #overlay {display:none} / #overlay.show {display:grid}
     overlay.classList.remove('show');
   }
 
@@ -129,11 +132,11 @@
   touchLayer.addEventListener('pointerleave', ()=>{ state.pointerX = null; });
 
   // ====== SPAWN ======
-  function spawnCoin(){
+  function spawnCoin(){ // ahora "pez"
     const x = 24 + Math.random() * (VIRTUAL_W - 48);
     state.entities.coins.push({ x, y: -20, r: COIN.radius, vy: state.speed });
   }
-  function spawnObst(){
+  function spawnObst(){ // roca
     const x = 34 + Math.random() * (VIRTUAL_W - 68);
     const size = OBST.size * (0.9 + Math.random()*0.3);
     state.entities.obst.push({ x, y: -40, w: size, h: size, vy: state.speed * (0.95 + Math.random()*0.2) });
@@ -173,6 +176,7 @@
     state.entities.coins = state.entities.coins.filter(c => c.y < VIRTUAL_H + 40);
     state.entities.obst  = state.entities.obst.filter(o => o.y < VIRTUAL_H + 60);
 
+    // Colisiones
     for (let i = state.entities.coins.length - 1; i >= 0; i--){
       const c = state.entities.coins[i];
       if (circleRectCollision(c.x, c.y, c.r, state.boat.x, state.boat.y, state.boat.w, state.boat.h)){
@@ -200,7 +204,7 @@
 
   // ====== RENDER ======
   function render(){
-    // Fondo simple
+    // Fondo simple (o tile si tienes agua)
     if (images.water){
       ctx.save();
       ctx.translate(0, (state.scroll % 512) - 512);
@@ -218,21 +222,32 @@
       ctx.fillRect(0,0,VIRTUAL_W,VIRTUAL_H);
     }
 
-    // Monedas
+    // Peces (antes monedas)
     for (const c of state.entities.coins){
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, COIN.radius, 0, Math.PI*2);
-      ctx.fillStyle = '#fbbf24';
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#f59e0b';
-      ctx.stroke();
+      if (images.coin){
+        const s = COIN.radius * 2;
+        ctx.drawImage(images.coin, c.x - s/2, c.y - s/2, s, s);
+      } else {
+        // Fallback: círculo dorado si no cargó el PNG
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, COIN.radius, 0, Math.PI*2);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#f59e0b';
+        ctx.stroke();
+      }
     }
 
-    // Obstáculos
+    // Rocas (obstáculos)
     for (const o of state.entities.obst){
-      ctx.fillStyle = '#6b7280';
-      ctx.fillRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
+      if (images.rock){
+        ctx.drawImage(images.rock, o.x - o.w/2, o.y - o.h/2, o.w, o.h);
+      } else {
+        // Fallback: rectángulo gris
+        ctx.fillStyle = '#6b7280';
+        ctx.fillRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
+      }
     }
 
     // Barco (jugador)
@@ -247,6 +262,7 @@
           state.boat.h
         );
       } else {
+        // Fallback: rectángulo rojo si no cargó el barco
         ctx.fillStyle = '#e11d48';
         ctx.fillRect(state.boat.x - state.boat.w/2, state.boat.y - state.boat.h/2, state.boat.w, state.boat.h);
       }
@@ -315,10 +331,15 @@
     updateHUD();
     window.addEventListener('resize', resizeCanvas, { passive: true });
 
+    // Si sospechas de caché, descomenta estas dos líneas:
+    // ASSETS.coin += "?v=1";
+    // ASSETS.rock += "?v=1";
+
+    // Carga con logs
     images.water = await loadImage(ASSETS.water);
     images.boat  = await loadImage(ASSETS.boat);
-    images.coin  = await loadImage(ASSETS.coin);
-    images.rock  = await loadImage(ASSETS.rock);
+    images.coin  = await loadImage(ASSETS.coin); // Peces.PNG
+    images.rock  = await loadImage(ASSETS.rock); // Roca.PNG
 
     restartBtn.addEventListener('click', resetGame);
     pauseBtn.addEventListener('click', togglePause);
