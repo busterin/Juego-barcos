@@ -96,9 +96,9 @@
   }
 
   function updateHUD(){
-    hudHearts.textContent = '❤️'.repeat(state.lives);
-    hudCoins.textContent = `🪙 ${state.coins} / ${WIN_COINS}`;
-  }
+  hudHearts.textContent = `❤️ x${state.lives}`;   // antes: '❤️'.repeat(state.lives)
+  hudCoins.textContent = `🪙 ${state.coins} / ${WIN_COINS}`;
+}
 
   function hideOverlay(){
     // Usamos clase .show controlada por CSS: #overlay {display:none} / #overlay.show {display:grid}
