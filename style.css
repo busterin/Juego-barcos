@@ -107,5 +107,3 @@ html, body {
   inset: 0;
   touch-action: none;
 }
-
-#overlay{ display: none !important; }
