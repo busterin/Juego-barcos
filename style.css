@@ -1,6 +1,6 @@
 :root{
-  --w: 420px;
-  --h: 740px;
+  --w: 420px;       /* ancho virtual objetivo para móvil vertical */
+  --h: 740px;       /* alto virtual objetivo */
   --hud-pad: 10px;
   --card-bg: rgba(0,0,0,.75);
   --card-radius: 16px;
@@ -14,10 +14,10 @@
 
 html, body {
   margin: 0; padding: 0;
-  background: #0a1224;
+  background: #0a1224; /* marco */
   color: #fff;
   font-family: var(--font);
-  touch-action: none;
+  touch-action: none; /* para arrastre suave */
   overscroll-behavior: none;
   height: 100%;
 }
@@ -33,11 +33,10 @@ html, body {
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
   max-height: 100vh;
-  background: #1d4ed8;
+  background: #1d4ed8; /* fallback si no pintamos agua */
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(0,0,0,.45);
   display: block;
-  z-index: 0;
 }
 
 #hud{
@@ -45,7 +44,6 @@ html, body {
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
   pointer-events: none;
-  z-index: 20;
 }
 
 .hud-left, .hud-right{
@@ -78,7 +76,6 @@ html, body {
   display: grid;
   place-items: center;
   background: rgba(0,0,0,.35);
-  z-index: 30;
 }
 
 .hidden{ display: none; }
@@ -93,7 +90,7 @@ html, body {
   backdrop-filter: blur(4px);
 }
 
-#overlay-card button{
+#restartBtn{
   margin-top: 10px;
   border: 0;
   padding: 10px 14px;
@@ -105,9 +102,8 @@ html, body {
 
 #touch-layer{
   position: absolute;
-  inset: 0;
   width: min(100vw, var(--w));
   height: min(100vh, var(--h));
+  inset: 0;
   touch-action: none;
-  z-index: 10;
 }
