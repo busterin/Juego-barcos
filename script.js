@@ -7,8 +7,8 @@
   const SCROLL_SPEED_GAIN = 0.3; // por moneda recogida
 
   const BOAT = {
-    width: 46,
-    height: 78,
+    width: 92,
+    height: 156,
     speed: 480, // px/s horizontal
     invulnMs: 1200
   };
