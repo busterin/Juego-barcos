@@ -131,3 +131,6 @@ html, body {
 }
 
 /* Landscape: el juego se bloquea con overlay desde JS */
+
+/* Ocultar botón de pausa arriba */
+#pauseBtn{ display: none !important; }
