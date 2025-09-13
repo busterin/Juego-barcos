@@ -107,3 +107,8 @@ html, body {
   inset: 0;
   touch-action: none;
 }
+/* Oculto por defecto SIEMPRE */
+#overlay{ display: none !important; }
+
+/* Visible solo cuando el JS añade la clase .show */
+#overlay.show{ display: grid !important; }
