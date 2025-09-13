@@ -23,7 +23,7 @@
 
   // Rutas a assets (nombres/caps EXACTOS)
   const ASSETS = {
-    water: "assets/Fondo.PNG",  // <- fondo fijo
+    water: "assets/Fondo.PNG",  // fondo fijo
     boat:  "assets/Barco.PNG",
     coin:  "assets/Peces.PNG",  // peces
     rock:  "assets/Rocas.PNG",  // rocas
@@ -69,6 +69,40 @@
     timers: { coin: 0, obst: 0 },
   };
 
+  // ====== ORIENTACIÓN ======
+  const isLandscape = () => window.innerWidth > window.innerHeight;
+
+  function showRotateBlock(){
+    overlay.classList.add('show');
+    overlayTitle.textContent = 'Gira el móvil 📱↻';
+    overlaySub.textContent = 'Este juego está pensado para vertical.';
+    restartBtn.classList.add('hidden'); // no ofrecer reinicio aquí
+    state.running = false;              // bloquear juego
+    pauseBtn.textContent = '▶️';
+  }
+
+  function hideRotateBlockIfNeeded(){
+    // Solo ocultamos si el overlay lo mostramos por orientación
+    if (overlay.classList.contains('show') &&
+        overlayTitle.textContent.startsWith('Gira el móvil')) {
+      overlay.classList.remove('show');
+      restartBtn.classList.add('hidden');
+      // No forzamos a correr; mantenemos el estado actual de pausa
+      // pero si estaba bloqueado por orientación, reanudamos
+      state.running = true;
+      pauseBtn.textContent = '⏸';
+    }
+  }
+
+  function updateOrientation(){
+    if (isLandscape()){
+      showRotateBlock();
+    } else {
+      hideRotateBlockIfNeeded();
+    }
+  }
+
+  // ====== CANVAS ======
   function resizeCanvas(){
     const cssW = Math.min(window.innerWidth, 420);
     const cssH = Math.min(window.innerHeight, 740);
@@ -78,6 +112,7 @@
     canvas.width = Math.floor(VIRTUAL_W * DPR);
     canvas.height = Math.floor(VIRTUAL_H * DPR);
     ctx.setTransform(DPR,0,0,DPR,0,0);
+    updateOrientation();
   }
 
   // ====== UTIL ======
@@ -96,9 +131,10 @@
   }
 
   function updateHUD(){
-  hudHearts.textContent = `❤️ x${state.lives}`;   // antes: '❤️'.repeat(state.lives)
-  hudCoins.textContent = `🪙 ${state.coins} / ${WIN_COINS}`;
-}
+    // Mostramos número explícito, por si el emoji se escala raro
+    hudHearts.textContent = `❤️ x${state.lives}`;
+    hudCoins.textContent = `🪙 ${state.coins} / ${WIN_COINS}`;
+  }
 
   function hideOverlay(){
     // Usamos clase .show controlada por CSS: #overlay {display:none} / #overlay.show {display:grid}
@@ -303,6 +339,11 @@
   function togglePause(){
     state.running = !state.running;
     pauseBtn.textContent = state.running ? '⏸' : '▶️';
+    if (overlay.classList.contains('show') && state.running &&
+        overlayTitle.textContent.startsWith('Gira el móvil')){
+      // Si el overlay era por orientación, no lo quitamos con la barra
+      return;
+    }
     if (overlay.classList.contains('show') && state.running){
       hideOverlay();
     }
@@ -323,6 +364,7 @@
     resizeCanvas();
     updateHUD();
     window.addEventListener('resize', resizeCanvas, { passive: true });
+    window.addEventListener('orientationchange', updateOrientation);
 
     // Carga con logs
     images.water = await loadImage(ASSETS.water); // Fondo.PNG
