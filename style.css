@@ -112,3 +112,10 @@ html, body {
 
 /* Visible solo cuando el JS añade la clase .show */
 #overlay.show{ display: grid !important; }
+
+/* El overlay solo se ve cuando tiene .show */
+#overlay { display: none !important; z-index: 30; }
+#overlay.show { display: grid !important; }
+
+/* La capa táctil queda por debajo del overlay */
+#touch-layer { z-index: 10; }
