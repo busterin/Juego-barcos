@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
   <title>Boat Run</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -12,7 +12,7 @@
 
     <div id="hud">
       <div class="hud-left">
-        <span id="hearts" aria-label="Vidas">❤️❤️❤️</span>
+        <span id="hearts" aria-label="Vidas">❤️ x3</span>
       </div>
       <div class="hud-right">
         <span id="coins" aria-label="Monedas">🪙 0 / 10</span>
@@ -20,8 +20,8 @@
       </div>
     </div>
 
-    <!-- Overlay reutilizado para victoria y game over -->
-    <div id="overlay" class="hidden">
+    <!-- Overlay reutilizado para victoria, game over y bloqueo por orientación -->
+    <div id="overlay" class="">
       <div id="overlay-card">
         <h1 id="overlay-title">Título</h1>
         <p id="overlay-sub">Subtítulo</p>
@@ -29,7 +29,7 @@
       </div>
     </div>
 
-    <!-- Controles táctiles opcionales (invisibles, pero capturan arrastre) -->
+    <!-- Capa táctil -->
     <div id="touch-layer"></div>
   </div>
 
