@@ -221,7 +221,7 @@
           state.lives--;
           updateHUD();
           state.invulnUntil = state.time*1000 + BOAT.invulnMs;
-          // empujón visual: retroceder obstáculo y dejarlo
+          // empujón visual
           o.y += 40;
           if (state.lives <= 0){
             gameOver();
@@ -239,7 +239,6 @@
     if (waterPattern){
       ctx.save();
       ctx.translate(0, (state.scroll % 512) - 512);
-      ctx.fillStyle = waterPattern;
       // Pintar dos tiles verticales para cubrir scroll
       for (let y=-512; y < VIRTUAL_H+512; y+=512){
         for (let x=0; x < VIRTUAL_W; x+=512){
@@ -353,18 +352,24 @@
   // ====== GAME STATE ======
   function win(){
     state.running = false;
-    showOverlay('¡Has ganado! 🏆', `Has recogido ${WIN_COINS} monedas.`);
+    // Overlay especial de victoria con el mensaje solicitado
+    overlay.classList.remove('hidden');
+    overlayTitle.textContent = '¡LO HAS CONSEGUIDO!';
+    overlaySub.textContent = 'El quinto número es 3.';
+    restartBtn.classList.remove('hidden');  // mostrar botón Reiniciar
     pauseBtn.textContent = '▶️';
   }
 
   function gameOver(){
     state.running = false;
     showOverlay('Game Over 💥', `Monedas recogidas: ${state.coins}/${WIN_COINS}`);
+    restartBtn.classList.remove('hidden');  // también permitir reinicio en game over
     pauseBtn.textContent = '▶️';
   }
 
   function resetGame(){
     hideOverlay();
+    restartBtn.classList.add('hidden');     // ocultar el botón al empezar nueva partida
     Object.assign(state, {
       running: true,
       time: 0, lastTs: 0, scroll: 0,
@@ -414,8 +419,7 @@
     images.rock  = await loadImage(ASSETS.rock);
 
     if (images.water){
-      // Creamos patrón manual dibujando el tile en draw; aquí basta con tener la imagen
-      waterPattern = true; // bandera para ruta rápida en render()
+      waterPattern = true;
     }
 
     restartBtn.addEventListener('click', resetGame);
