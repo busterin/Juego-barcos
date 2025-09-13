@@ -6,8 +6,7 @@
   const SCROLL_SPEED_BASE = 160; // px/s
   const SCROLL_SPEED_GAIN = 0.3; // por "moneda"/pez recogido
 
-  // Si ya duplicaste el tamaño del barco en tu proyecto, perfecto.
-  // Aquí mantengo los valores por defecto (ajústalos si quieres fijarlo desde el código).
+  // Barco al doble de tamaño
   const BOAT = {
     width: 92,
     height: 156,
@@ -24,10 +23,10 @@
 
   // Rutas a assets (nombres/caps EXACTOS)
   const ASSETS = {
-    water: "assets/water_tile_512.png",
+    water: "assets/Fondo.PNG",  // <- fondo fijo
     boat:  "assets/Barco.PNG",
-    coin:  "assets/Peces.PNG", // <- peces
-    rock:  "assets/Rocas.PNG",  // <- roca
+    coin:  "assets/Peces.PNG",  // peces
+    rock:  "assets/Rocas.PNG",  // rocas
     heart: "assets/heart_32.png"
   };
 
@@ -204,17 +203,11 @@
 
   // ====== RENDER ======
   function render(){
-    // Fondo simple (o tile si tienes agua)
+    // Fondo fijo: Fondo.PNG estirado a todo el canvas
     if (images.water){
-      ctx.save();
-      ctx.translate(0, (state.scroll % 512) - 512);
-      for (let y=-512; y < VIRTUAL_H+512; y+=512){
-        for (let x=0; x < VIRTUAL_W; x+=512){
-          ctx.drawImage(images.water, x, y, 512, 512);
-        }
-      }
-      ctx.restore();
+      ctx.drawImage(images.water, 0, 0, VIRTUAL_W, VIRTUAL_H);
     } else {
+      // Fallback: gradiente azul si no carga
       const g = ctx.createLinearGradient(0,0,0,VIRTUAL_H);
       g.addColorStop(0, '#0ea5e9');
       g.addColorStop(1, '#1d4ed8');
@@ -228,7 +221,7 @@
         const s = COIN.radius * 2;
         ctx.drawImage(images.coin, c.x - s/2, c.y - s/2, s, s);
       } else {
-        // Fallback: círculo dorado si no cargó el PNG
+        // Fallback: círculo dorado
         ctx.beginPath();
         ctx.arc(c.x, c.y, COIN.radius, 0, Math.PI*2);
         ctx.fillStyle = '#fbbf24';
@@ -262,7 +255,7 @@
           state.boat.h
         );
       } else {
-        // Fallback: rectángulo rojo si no cargó el barco
+        // Fallback: rectángulo rojo
         ctx.fillStyle = '#e11d48';
         ctx.fillRect(state.boat.x - state.boat.w/2, state.boat.y - state.boat.h/2, state.boat.w, state.boat.h);
       }
@@ -331,15 +324,11 @@
     updateHUD();
     window.addEventListener('resize', resizeCanvas, { passive: true });
 
-    // Si sospechas de caché, descomenta estas dos líneas:
-    // ASSETS.coin += "?v=1";
-    // ASSETS.rock += "?v=1";
-
     // Carga con logs
-    images.water = await loadImage(ASSETS.water);
+    images.water = await loadImage(ASSETS.water); // Fondo.PNG
     images.boat  = await loadImage(ASSETS.boat);
     images.coin  = await loadImage(ASSETS.coin); // Peces.PNG
-    images.rock  = await loadImage(ASSETS.rock); // Roca.PNG
+    images.rock  = await loadImage(ASSETS.rock); // Rocas.PNG
 
     restartBtn.addEventListener('click', resetGame);
     pauseBtn.addEventListener('click', togglePause);
